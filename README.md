@@ -5,15 +5,45 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/louiswu1110/golang-graceful-shutdown.svg)](https://pkg.go.dev/github.com/louiswu1110/golang-graceful-shutdown)
 [![Go](https://github.com/louiswu1110/golang-graceful-shutdown/actions/workflows/go.yml/badge.svg)](https://github.com/louiswu1110/golang-graceful-shutdown/actions/workflows/go.yml)
 
-`gracefulshutdown` is a small lifecycle coordinator for Go services. It starts
-HTTP servers, worker pools, background jobs, and custom components together,
-then shuts them down when:
+**Gracefully stop your entire Go service—not just the HTTP server.**
+
+`gracefulshutdown` is a zero-dependency lifecycle coordinator for Go services.
+Use one manager to start and stop HTTP servers, Gin applications, worker pools,
+background jobs, and cleanup tasks.
+
+- One lifecycle for servers, workers, jobs, and resource cleanup
+- Reverse-order sequential or concurrent shutdown
+- One configurable deadline for the complete shutdown operation
+- Native `SIGINT`, `SIGTERM`, and parent-context handling
+- Joined errors that work with `errors.Is` and `errors.As`
+- Zero third-party dependencies in the core module
+
+Shutdown starts when:
 
 - the parent context is canceled;
 - `SIGINT` or `SIGTERM` is received;
 - any component stops or returns an error.
 
 The package uses only the Go standard library. Go 1.23 or newer is required.
+
+## Why this library?
+
+`http.Server.Shutdown` gracefully drains HTTP connections, but a production Go
+service usually has more to stop: worker pools, background jobs, queues,
+database connections, metrics exporters, and other resources.
+
+You can coordinate those lifecycles by hand with signal channels, goroutines,
+timeouts, and error handling. `gracefulshutdown` packages that coordination into
+a small, reusable API while leaving each component in control of how it stops.
+
+| Capability | Hand-written signal handling | Framework-specific helper | `gracefulshutdown` |
+| --- | :---: | :---: | :---: |
+| Graceful HTTP shutdown | Yes | Yes | Yes |
+| Gin and any `http.Handler` | Manual | Usually one framework | Yes |
+| Workers and background jobs | Manual | No | Yes |
+| Dependency-aware reverse order | Manual | No | Yes |
+| Parallel component shutdown | Manual | No | Yes |
+| Zero core dependencies | Yes | Varies | Yes |
 
 ## Install
 

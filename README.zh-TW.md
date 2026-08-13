@@ -2,15 +2,44 @@
 
 [English](README.md)
 
-`gracefulshutdown` 是一個輕量的 Go 服務生命週期協調套件，可同時管理 HTTP
-server、worker pool、背景工作與自訂元件。以下情況發生時會開始 graceful
-shutdown：
+**優雅地停止整個 Go 服務，而不只是 HTTP server。**
+
+`gracefulshutdown` 是零第三方依賴的 Go 服務生命週期協調套件。只用一個
+manager，即可同時啟動及停止 HTTP server、Gin、worker pool、背景工作與資源
+清理程序。
+
+- 統一管理 server、worker、背景工作與資源清理
+- 支援反向循序或平行 shutdown
+- 整個 shutdown 流程共用一個可設定的 deadline
+- 原生處理 `SIGINT`、`SIGTERM` 與上層 context
+- 使用 `errors.Join` 彙整錯誤，可搭配 `errors.Is`、`errors.As`
+- 核心 module 零第三方依賴
+
+以下情況發生時會開始 graceful shutdown：
 
 - 上層 context 被取消；
 - 收到 `SIGINT` 或 `SIGTERM`；
 - 任一元件停止或回傳錯誤。
 
 核心套件僅使用 Go 標準函式庫，最低需求為 Go 1.23。
+
+## 為什麼需要這個套件？
+
+`http.Server.Shutdown` 能等待 HTTP 連線完成，但正式服務通常還包含 worker
+pool、背景工作、queue、資料庫連線與 metrics exporter。它們也必須按照正確順序
+停止。
+
+你可以自行組合 signal channel、goroutine、timeout 與錯誤處理；這個套件則把
+通用協調邏輯整理成小型 API，同時讓每個 component 自己決定如何完成 shutdown。
+
+| 能力 | 自行處理 signal | Framework 專用工具 | `gracefulshutdown` |
+| --- | :---: | :---: | :---: |
+| HTTP graceful shutdown | ✓ | ✓ | ✓ |
+| Gin 與任何 `http.Handler` | 手動 | 通常限定一種 | ✓ |
+| Worker 與背景工作 | 手動 | — | ✓ |
+| 依相依關係反向關閉 | 手動 | — | ✓ |
+| 平行關閉元件 | 手動 | — | ✓ |
+| 核心零第三方依賴 | ✓ | 視工具而定 | ✓ |
 
 ## 安裝
 

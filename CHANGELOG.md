@@ -4,6 +4,11 @@ This project follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Improved the README value proposition, feature overview, and comparison for
+  easier project discovery.
+
 ## [0.1.0] - 2026-08-13
 
 ### Added
