@@ -4,6 +4,8 @@ This project follows Keep a Changelog and Semantic Versioning.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-13
+
 ### Changed
 
 - Improved the README value proposition, feature overview, and comparison for
@@ -19,5 +21,6 @@ This project follows Keep a Changelog and Semantic Versioning.
 - Standard `net/http` adapter compatible with Gin and other frameworks.
 - English and Traditional Chinese docs, runnable examples, tests, and CI.
 
-[Unreleased]: https://github.com/louiswu1110/golang-graceful-shutdown/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/louiswu1110/golang-graceful-shutdown/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/louiswu1110/golang-graceful-shutdown/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/louiswu1110/golang-graceful-shutdown/releases/tag/v0.1.0
