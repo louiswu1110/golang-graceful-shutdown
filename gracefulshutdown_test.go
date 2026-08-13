@@ -127,3 +127,71 @@ func TestCleanupAndConfigurationValidation(t *testing.T) {
 		t.Fatal("component started despite invalid configuration")
 	}
 }
+
+func TestRunRejectsInvalidUsage(t *testing.T) {
+	tests := []struct {
+		name    string
+		manager *Manager
+		ctx     context.Context
+	}{
+		{name: "no components", manager: New(), ctx: context.Background()},
+		{name: "nil component", manager: New().Add(nil), ctx: context.Background()},
+		{name: "empty name", manager: New().Add(CleanupFunc(nil), WithName("")), ctx: context.Background()},
+		{name: "invalid mode", manager: New(WithShutdownMode(ShutdownMode(99))).Add(CleanupFunc(nil)), ctx: context.Background()},
+		{name: "nil context", manager: New().Add(CleanupFunc(nil)), ctx: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.manager.Run(tt.ctx); err == nil {
+				t.Fatal("Run() error = nil")
+			}
+		})
+	}
+}
+
+func TestRunMayOnlyBeCalledOnce(t *testing.T) {
+	manager := New().Add(CleanupFunc(nil))
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_ = manager.Run(ctx)
+	if err := manager.Run(context.Background()); err == nil {
+		t.Fatal("second Run() error = nil")
+	}
+}
+
+func TestShutdownErrorsAreJoined(t *testing.T) {
+	errFirst := errors.New("first close failed")
+	errSecond := errors.New("second close failed")
+	manager := New()
+	manager.Add(blockingComponent(func(context.Context) error { return errFirst }), WithName("first"))
+	manager.Add(blockingComponent(func(context.Context) error { return errSecond }), WithName("second"))
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	err := manager.Run(ctx)
+	if !errors.Is(err, errFirst) || !errors.Is(err, errSecond) {
+		t.Fatalf("Run() error = %v, want both shutdown errors", err)
+	}
+}
+
+func TestAddAfterRunStartsIsRejected(t *testing.T) {
+	started := make(chan struct{})
+	manager := New().Add(testComponent{
+		start: func(ctx context.Context) error {
+			close(started)
+			<-ctx.Done()
+			return nil
+		},
+		shutdown: func(context.Context) error { return nil },
+	})
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() { done <- manager.Run(ctx) }()
+	<-started
+	manager.Add(CleanupFunc(nil))
+	cancel()
+	_ = <-done
+	if manager.configErr == nil {
+		t.Fatal("Add() after Run did not record an error")
+	}
+}

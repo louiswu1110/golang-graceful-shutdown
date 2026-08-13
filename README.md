@@ -1,5 +1,7 @@
 # gracefulshutdown
 
+[繁體中文](README.zh-TW.md)
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/louiswu1110/golang-graceful-shutdown.svg)](https://pkg.go.dev/github.com/louiswu1110/golang-graceful-shutdown)
 [![Go](https://github.com/louiswu1110/golang-graceful-shutdown/actions/workflows/go.yml/badge.svg)](https://github.com/louiswu1110/golang-graceful-shutdown/actions/workflows/go.yml)
 
@@ -107,8 +109,8 @@ manager.Add(gracefulshutdown.ComponentFuncs(
 ), gracefulshutdown.WithName("workers"))
 ```
 
-See the runnable [HTTP example](examples/http/main.go) and [worker pool
-example](examples/worker_pool/main.go).
+See the runnable [HTTP example](examples/http/main.go), [Gin
+example](examples/gin), and [worker pool example](examples/worker_pool/main.go).
 
 ## Shutdown order
 
